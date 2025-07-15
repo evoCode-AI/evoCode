@@ -27,7 +27,7 @@ interface User {
 }
 
 interface AppContentProps {
-  user: User | null
+  user: any
   isAuthenticated: boolean
   onLogin: (userData: User) => void
   onLogout: () => void
@@ -60,6 +60,10 @@ const AppContent: React.FC<AppContentProps> = ({ user, isAuthenticated, onLogin,
           element={isAuthenticated && user ? <LearningPath user={user} /> : <Navigate to="/login" replace />}
         />
         <Route
+          path="/lesson/:language/:lessonId"
+          element={isAuthenticated && user ? <Lesson user={user} /> : <Navigate to="/login" replace />}
+        />
+        <Route
           path="/chat"
           element={isAuthenticated && user ? <ChatTutor user={user} /> : <Navigate to="/login" replace />}
         />
@@ -76,9 +80,13 @@ const AppContent: React.FC<AppContentProps> = ({ user, isAuthenticated, onLogin,
           element={isAuthenticated && user ? <ProblemSolver user={user} /> : <Navigate to="/login" replace />}
         />
       </Routes>
-      {/* Only show floating AI tutor on authenticated pages except chat page and problemsolver page */}
-      {isAuthenticated && user && location.pathname !== "/chat" && <FloatingAITutor user={user} />}
-      </div>
+      {/* Only show floating AI tutor on authenticated pages except chat, competitive, and problem solver pages */}
+      {isAuthenticated &&
+        user &&
+        location.pathname !== "/chat" &&
+        location.pathname !== "/competitive" &&
+        !location.pathname.startsWith("/problem/") && <FloatingAITutor user={user} />}
+    </div>
   )
 }
 

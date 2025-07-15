@@ -111,18 +111,8 @@ const CompetitiveCoding: React.FC<CompetitiveCodingProps> = ({ user }) => {
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "upcoming":
-        return "#3b82f6"
-      case "live":
-        return "#ef4444"
-      case "ended":
-        return "#6b7280"
-      default:
-        return "#6b7280"
-    }
-  }
+  const solvedCount = problems.filter((p) => p.solved).length
+  const successRate = problems.length > 0 ? Math.round((solvedCount / problems.length) * 100) : 0
 
   return (
     <div className="competitive-coding">
@@ -147,19 +137,19 @@ const CompetitiveCoding: React.FC<CompetitiveCodingProps> = ({ user }) => {
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           <div className="stat-card">
-            <h3>🏆 1,420</h3>
+            <h3>🏆 {user.level}</h3>
             <p>Rating</p>
           </div>
           <div className="stat-card">
-            <h3>✅ 23</h3>
+            <h3>✅ {solvedCount}</h3>
             <p>Solved</p>
           </div>
           <div className="stat-card">
-            <h3>🎯 85%</h3>
+            <h3>🎯 {successRate}%</h3>
             <p>Success Rate</p>
           </div>
           <div className="stat-card">
-            <h3>🔥 12</h3>
+            <h3>🔥 {user.streak}</h3>
             <p>Contest Streak</p>
           </div>
         </motion.div>
@@ -258,10 +248,13 @@ const CompetitiveCoding: React.FC<CompetitiveCodingProps> = ({ user }) => {
                 { rank: 1, name: "CodeMaster", rating: 2150, change: "+25" },
                 { rank: 2, name: "AlgoWiz", rating: 2089, change: "+12" },
                 { rank: 3, name: "ByteNinja", rating: 2034, change: "-8" },
-                { rank: 4, name: "You", rating: 1420, change: "+15" },
+                { rank: 4, name: user.name || "You", rating: user.level, change: "+15" },
                 { rank: 5, name: "DevGuru", rating: 1398, change: "+3" },
               ].map((player, index) => (
-                <div key={index} className={`leaderboard-item ${player.name === "You" ? "current-user" : ""}`}>
+                <div
+                  key={index}
+                  className={`leaderboard-item ${player.name === (user.name || "You") ? "current-user" : ""}`}
+                >
                   <span className="rank">#{player.rank}</span>
                   <span className="name">{player.name}</span>
                   <span className="rating">{player.rating}</span>
