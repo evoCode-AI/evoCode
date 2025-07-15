@@ -369,20 +369,24 @@ print(f"Is student: {is_student}")`,
           {showAITutor && (
             <motion.div
               className="ai-tutor-sidebar"
-              initial={{ x: 300, opacity: 0 }}
+              initial={{ x: 400, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 300, opacity: 0 }}
+              exit={{ x: 400, opacity: 0 }}
               transition={{ duration: 0.3 }}
             >
               <FloatingAITutor
                 user={user}
-                context={`Currently learning about: ${currentContent.title}`}
+                lessonContext={`Currently learning about: ${currentContent.title}`}
                 onClose={() => setShowAITutor(false)}
+                isEmbedded={true}
               />
             </motion.div>
           )}
         </AnimatePresence>
       </div>
+
+      {/* Only show floating button when sidebar is not open */}
+      {!showAITutor && <FloatingAITutor user={user} />}
     </div>
   )
 }
