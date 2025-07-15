@@ -1,0 +1,366 @@
+.competitive-coding {
+  flex: 1;
+  padding: 2rem;
+  background: var(--bg-primary);
+  min-height: calc(100vh - 80px);
+}
+
+.competitive-header {
+  margin-bottom: 3rem;
+}
+
+.header-content {
+  margin-bottom: 2rem;
+}
+
+.back-btn {
+  color: var(--text-accent);
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  display: inline-block;
+  transition: color 0.3s ease;
+}
+
+.back-btn:hover {
+  color: #4f46e5;
+}
+
+.header-content h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.header-content p {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+}
+
+.competitive-stats {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.competitive-stats .stat-card {
+  background: var(--bg-secondary);
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 150px;
+  border: 1px solid var(--border-color);
+}
+
+.competitive-stats .stat-card h3 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.competitive-stats .stat-card p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.competitive-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 3rem;
+}
+
+.problems-section {
+  background: var(--bg-secondary);
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px var(--shadow);
+  border: 1px solid var(--border-color);
+  margin-bottom: 3rem;
+}
+
+.problems-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.problems-header h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.filters {
+  display: flex;
+  gap: 1rem;
+}
+
+.filter-select {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.problems-list1 {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.problem-card1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  background: var(--bg-primary);
+}
+
+.problem-card1:hover {
+  border-color: var(--text-accent);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+}
+
+.problem-card1.solved {
+  border-left: 4px solid #10b981;
+}
+
+.problem-info1 {
+  flex: 1;
+}
+
+.problem-title1 {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.problem-title1 h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.problem-meta1 {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.problem-meta1 span {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.difficulty1 {
+  background: rgba(99, 102, 241, 0.1);
+  font-weight: 600;
+}
+
+.category1 {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.points1 {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.problem-stats1 {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0 2rem;
+}
+
+.stat1 {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+}
+
+.stat-labe1l {
+  color: var(--text-secondary);
+}
+
+.stat-value1 {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.solve-btn1 {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.solve-btn1:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.leaderboard-card,
+.achievements-card {
+  background: var(--bg-secondary);
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px var(--shadow);
+  margin-bottom: 2rem;
+  border: 1px solid var(--border-color);
+}
+
+.leaderboard-card h3,
+.achievements-card h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+}
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.leaderboard-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 8px;
+  background: var(--bg-primary);
+}
+
+.leaderboard-item.current-user {
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid var(--text-accent);
+}
+
+.rank {
+  font-weight: 700;
+  color: var(--text-accent);
+}
+
+.name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.rating {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.change.positive {
+  color: #10b981;
+}
+
+.change.negative {
+  color: #ef4444;
+}
+
+.achievements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.achievement-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background: var(--bg-primary);
+}
+
+.achievement-item.earned {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid #10b981;
+}
+
+.achievement-item.locked {
+  opacity: 0.6;
+}
+
+.achievement-icon {
+  font-size: 1.5rem;
+}
+
+.achievement-info h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.achievement-info p {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 1024px) {
+  .competitive-content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .competitive-stats {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .competitive-coding {
+    padding: 1rem;
+  }
+
+  .header-content h1 {
+    font-size: 2rem;
+  }
+
+  .contests-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .problems-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .problem-card {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .problem-stats {
+    margin: 0;
+    flex-direction: row;
+    justify-content: space-around;
+  }
+}
