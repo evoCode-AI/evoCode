@@ -32,7 +32,7 @@ A personalized, agentic AI-powered platform that teaches programming through int
 
 | Layer     | Technology     |
 |-----------|----------------|
-| Frontend  | React.js + Tailwind CSS |
+| Frontend  | React.js + Custom CSS |
 | Backend   | FastAPI (Python) |
 | Database  | PostgreSQL / SQLite |
 | AI Layer  | OpenAI API, LangChain |
