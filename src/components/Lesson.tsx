@@ -1,293 +1,387 @@
 "use client"
 
 import type React from "react"
-import { useState, useRef } from "react"
-import { Link, useParams } from "react-router-dom"
-import { motion } from "framer-motion"
+import { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Link } from "react-router-dom"
+import FloatingAITutor from "./FloatingAITutor.tsx"
 import "./Lesson.css"
 
+interface User {
+  id: number
+  name: string
+  email: string
+  level: number
+  xp: number
+  streak: number
+  badges: string[]
+  completedLessons: number[]
+}
+
 interface LessonProps {
-  user?: any
+  user: User
 }
 
 interface LessonContent {
   id: number
   title: string
+  type: "text" | "code" | "quiz" | "video"
   content: string
-  codeExample: string
-  expectedOutput: string
-  explanation: string
-  hints: string[]
+  codeExample?: string
+  language?: string
+  quiz?: {
+    question: string
+    options: string[]
+    correct: number
+  }
 }
 
 const Lesson: React.FC<LessonProps> = ({ user }) => {
-  const { language, lessonId } = useParams<{ language: string; lessonId: string }>()
-  const [code, setCode] = useState("")
-  const [output, setOutput] = useState("")
-  const [isRunning, setIsRunning] = useState(false)
-  const [showHints, setShowHints] = useState(false)
-  const [currentStep, setCurrentStep] = useState(0)
-  const codeEditorRef = useRef<HTMLTextAreaElement>(null)
+  const [currentStep, setCurrentStep] = useState<number>(0)
+  const [showAITutor, setShowAITutor] = useState<boolean>(false)
+  const [userCode, setUserCode] = useState<string>("")
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null)
+  const [showResult, setShowResult] = useState<boolean>(false)
 
-  // Sample lesson content - in real app this would come from API
-  const lessonContent: LessonContent = {
-    id: 1,
-    title: "Comments in Python",
-    content: `Since Python will ignore string literals that are not assigned to a variable, you can add a multiline string (triple quotes) in your code, and place your comment inside it:`,
-    codeExample: `"""
-This is a comment
-written in
-more than just one line
-"""
-print("Hello, World!")`,
-    expectedOutput: "Hello, World!",
-    explanation: `As long as the string is not assigned to a variable, Python will read the code, but then ignore it, and you have made a multiline comment.`,
-    hints: [
-      'Triple quotes (""") can be used for multiline strings',
-      "Unassigned strings are ignored by Python",
-      "This is a common way to create multiline comments",
-    ],
-  }
+  const lessonContent: LessonContent[] = [
+    {
+      id: 1,
+      title: "Introduction to Variables",
+      type: "text",
+      content:
+        "Variables are containers that store data values. In Python, you don't need to declare the type of variable - Python automatically determines the type based on the value you assign.\n\nVariables are fundamental building blocks in programming. They allow us to store, modify, and retrieve data throughout our program's execution.",
+    },
+    {
+      id: 2,
+      title: "Creating Variables",
+      type: "code",
+      content: "Let's create some variables in Python. Here are different types of variables you can create:",
+      codeExample: `# String variable
+name = "Alice"
 
-  useState(() => {
-    setCode(lessonContent.codeExample)
-  })
+# Integer variable
+age = 25
 
-  const runCode = async () => {
-    setIsRunning(true)
-    setOutput("")
+# Float variable
+height = 5.6
 
-    try {
-      // Simulate Python execution - in real app you'd use Pyodide or similar
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+# Boolean variable
+is_student = True
 
-      // Simple Python interpreter simulation
-      const lines = code.split("\n")
-      let result = ""
+print(f"Name: {name}")
+print(f"Age: {age}")
+print(f"Height: {height}")
+print(f"Is student: {is_student}")`,
+      language: "python",
+    },
+    {
+      id: 3,
+      title: "Practice: Create Your Own Variables",
+      type: "code",
+      content:
+        "Now it's your turn! Create variables for your favorite movie, the year it was released, and whether you would recommend it.",
+      codeExample: `# Create your variables here
+# Example:
+# movie_title = "Your favorite movie"
+# release_year = 2020
+# would_recommend = True
 
-      for (const line of lines) {
-        const trimmed = line.trim()
-        if (trimmed.startsWith("print(")) {
-          const match = trimmed.match(/print$$["'](.*)["']$$/)
-          if (match) {
-            result += match[1] + "\n"
-          }
-        }
-      }
+`,
+      language: "python",
+    },
+    {
+      id: 4,
+      title: "Knowledge Check",
+      type: "quiz",
+      content: "Let's test your understanding of variables!",
+      quiz: {
+        question: "Which of the following is a valid variable name in Python?",
+        options: ["2variable", "my-variable", "my_variable", "my variable"],
+        correct: 2,
+      },
+    },
+    {
+      id: 5,
+      title: "Variable Naming Rules",
+      type: "text",
+      content:
+        "When naming variables in Python, follow these important rules:\n\n• Variable names must start with a letter or underscore\n• Cannot start with a number\n• Can only contain letters, numbers, and underscores\n• Case-sensitive (myVar and myvar are different)\n• Cannot use Python keywords (like 'if', 'for', 'while')\n\nBest practices:\n• Use descriptive names (user_age instead of x)\n• Use snake_case for multi-word variables\n• Keep names concise but meaningful",
+    },
+  ]
 
-      setOutput(result || "No output")
-    } catch (error) {
-      setOutput(`Error: ${error}`)
-    } finally {
-      setIsRunning(false)
+  const currentContent = lessonContent[currentStep]
+  const progress = ((currentStep + 1) / lessonContent.length) * 100
+
+  const handleNext = () => {
+    if (currentStep < lessonContent.length - 1) {
+      setCurrentStep(currentStep + 1)
+      setSelectedAnswer(null)
+      setShowResult(false)
+      setUserCode("")
     }
   }
 
-  const resetCode = () => {
-    setCode(lessonContent.codeExample)
-    setOutput("")
+  const handlePrevious = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1)
+      setSelectedAnswer(null)
+      setShowResult(false)
+    }
   }
 
-  const nextLesson = () => {
-    // Navigate to next lesson
-    console.log("Navigate to next lesson")
+  const handleQuizSubmit = () => {
+    if (selectedAnswer !== null) {
+      setShowResult(true)
+    }
+  }
+
+  const handleRunCode = () => {
+    // Simulate code execution
+    console.log("Running code:", userCode)
+    alert("Code executed successfully! Check the console for output.")
+  }
+
+  const toggleAITutor = () => {
+    setShowAITutor(!showAITutor)
   }
 
   return (
-    <div className="lesson-container">
+    <div className="lesson">
       <div className="lesson-header">
-        <motion.div
-          className="lesson-nav"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <Link to={`/learning/${language}`} className="back-btn">
-            ← Back to Path
+        <div className="lesson-nav">
+          <Link to="/learning/python" className="back-btn">
+            ← Back to Python Course
           </Link>
-          <div className="lesson-progress">
-            <span>Lesson 3 of 6</span>
-            <div className="progress-bar">
-              <div className="progress-fill" style={{ width: "50%" }}></div>
+          <div className="lesson-info">
+            <h1>Python Basics: Variables</h1>
+            <div className="lesson-meta">
+              <span className="lesson-step">
+                Step {currentStep + 1} of {lessonContent.length}
+              </span>
+              <span className="lesson-time">⏱️ 15 min</span>
             </div>
           </div>
-        </motion.div>
+        </div>
 
-        <motion.div
-          className="lesson-title"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          <h1>{lessonContent.title}</h1>
-          <div className="lesson-meta">
-            <span className="difficulty">Beginner</span>
-            <span className="duration">15 min</span>
-            <span className="xp">+100 XP</span>
-          </div>
-        </motion.div>
+        <div className="lesson-actions">
+          <button className={`ai-tutor-toggle ${showAITutor ? "active" : ""}`} onClick={toggleAITutor}>
+            🤖 AI Tutor
+          </button>
+        </div>
       </div>
 
-      <div className="lesson-content">
-        <div className="lesson-main">
-          <motion.section
-            className="lesson-explanation"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            <div className="content-text">
-              <p>{lessonContent.content}</p>
-            </div>
+      <div className="lesson-progress">
+        <div className="progress-bar">
+          <motion.div
+            className="progress-fill"
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.5 }}
+          />
+        </div>
+        <span className="progress-text">{Math.round(progress)}% Complete</span>
+      </div>
 
-            <div className="example-section">
-              <h3>Example</h3>
-              <div className="code-example">
-                <div className="code-display">
-                  <pre>
-                    <code>
-                      {`"""
-This is a comment
-written in
-more than just one line
-"""
-print("Hello, World!")`}
-                    </code>
-                  </pre>
+      <div className={`lesson-container ${showAITutor ? "with-tutor" : ""}`}>
+        <div className="lesson-content">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              className="content-step"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="step-header">
+                <h2>{currentContent.title}</h2>
+                <div className="step-type">
+                  {currentContent.type === "text" && "📖 Reading"}
+                  {currentContent.type === "code" && "💻 Coding"}
+                  {currentContent.type === "quiz" && "❓ Quiz"}
+                  {currentContent.type === "video" && "🎥 Video"}
                 </div>
-                <button
-                  className="try-button"
-                  onClick={() => {
-                    const editor = document.querySelector(".code-editor") as HTMLElement
-                    if (editor) {
-                      editor.scrollIntoView({ behavior: "smooth" })
-                    }
-                  }}
-                >
-                  Try it Yourself »
-                </button>
               </div>
-            </div>
 
-            <div className="explanation-text">
-              <p>{lessonContent.explanation}</p>
-            </div>
-          </motion.section>
+              <div className="step-content">
+                {currentContent.type === "text" && (
+                  <div className="text-content">
+                    {currentContent.content.split("\n").map((paragraph, index) => (
+                      <p key={index}>{paragraph}</p>
+                    ))}
+                  </div>
+                )}
 
-          <motion.section
-            className="code-editor-section"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-          >
-            <div className="editor-header">
-              <h3>Interactive Code Editor</h3>
-              <div className="editor-controls">
-                <button onClick={resetCode} className="reset-btn">
-                  Reset
-                </button>
-                <button onClick={runCode} className="run-btn" disabled={isRunning}>
-                  {isRunning ? "Running..." : "Run Code"}
-                </button>
-              </div>
-            </div>
-
-            <div className="code-editor">
-              <div className="editor-container">
-                <textarea
-                  ref={codeEditorRef}
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  className="code-textarea"
-                  placeholder="Write your Python code here..."
-                  spellCheck={false}
-                />
-                <div className="line-numbers">
-                  {code.split("\n").map((_, index) => (
-                    <div key={index} className="line-number">
-                      {index + 1}
+                {currentContent.type === "code" && (
+                  <div className="code-content">
+                    <div className="content-text">
+                      <p>{currentContent.content}</p>
                     </div>
-                  ))}
-                </div>
-              </div>
 
-              <div className="output-section">
-                <div className="output-header">
-                  <h4>Output</h4>
-                  {output && <span className="output-status success">✓ Code executed successfully</span>}
-                </div>
-                <div className="output-content">
-                  {output ? (
-                    <pre>{output}</pre>
-                  ) : (
-                    <div className="output-placeholder">Click "Run Code" to see the output here</div>
-                  )}
-                </div>
+                    {currentContent.codeExample && (
+                      <div className="code-example">
+                        <div className="code-header">
+                          <span className="code-language">{currentContent.language}</span>
+                          <button
+                            className="copy-btn"
+                            onClick={() => navigator.clipboard.writeText(currentContent.codeExample || "")}
+                          >
+                            📋 Copy
+                          </button>
+                        </div>
+                        <pre>
+                          <code>{currentContent.codeExample}</code>
+                        </pre>
+                      </div>
+                    )}
+
+                    {currentStep === 2 && (
+                      <div className="code-editor">
+                        <div className="editor-header">
+                          <span>✏️ Your Code</span>
+                          <button className="run-btn" onClick={handleRunCode}>
+                            ▶️ Run Code
+                          </button>
+                        </div>
+                        <textarea
+                          value={userCode}
+                          onChange={(e) => setUserCode(e.target.value)}
+                          placeholder="Write your code here..."
+                          className="code-textarea"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {currentContent.type === "quiz" && currentContent.quiz && (
+                  <div className="quiz-content">
+                    <div className="quiz-question">
+                      <h3>{currentContent.quiz.question}</h3>
+                    </div>
+
+                    <div className="quiz-options">
+                      {currentContent.quiz.options.map((option, index) => (
+                        <motion.button
+                          key={index}
+                          className={`quiz-option ${selectedAnswer === index ? "selected" : ""} ${
+                            showResult
+                              ? index === currentContent.quiz!.correct
+                                ? "correct"
+                                : selectedAnswer === index
+                                  ? "incorrect"
+                                  : ""
+                              : ""
+                          }`}
+                          onClick={() => !showResult && setSelectedAnswer(index)}
+                          disabled={showResult}
+                          whileHover={{ scale: showResult ? 1 : 1.02 }}
+                          whileTap={{ scale: showResult ? 1 : 0.98 }}
+                        >
+                          <span className="option-letter">{String.fromCharCode(65 + index)}</span>
+                          <span className="option-text">{option}</span>
+                          {showResult && index === currentContent.quiz!.correct && (
+                            <span className="option-icon">✅</span>
+                          )}
+                          {showResult && selectedAnswer === index && index !== currentContent.quiz!.correct && (
+                            <span className="option-icon">❌</span>
+                          )}
+                        </motion.button>
+                      ))}
+                    </div>
+
+                    {!showResult && selectedAnswer !== null && (
+                      <button className="submit-quiz-btn" onClick={handleQuizSubmit}>
+                        Submit Answer
+                      </button>
+                    )}
+
+                    {showResult && (
+                      <div
+                        className={`quiz-result ${
+                          selectedAnswer === currentContent.quiz.correct ? "correct" : "incorrect"
+                        }`}
+                      >
+                        {selectedAnswer === currentContent.quiz.correct ? (
+                          <div className="result-content">
+                            <span className="result-icon">🎉</span>
+                            <div>
+                              <h4>Correct!</h4>
+                              <p>Great job! You've got it right.</p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="result-content">
+                            <span className="result-icon">💡</span>
+                            <div>
+                              <h4>Not quite right</h4>
+                              <p>
+                                The correct answer is option {String.fromCharCode(65 + currentContent.quiz.correct)}.
+                                Variable names in Python must follow specific naming rules.
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
+            </motion.div>
+          </AnimatePresence>
+
+          <div className="lesson-navigation">
+            <button className="nav-btn prev" onClick={handlePrevious} disabled={currentStep === 0}>
+              ← Previous
+            </button>
+
+            <div className="step-indicators">
+              {lessonContent.map((_, index) => (
+                <button
+                  key={index}
+                  className={`step-indicator ${
+                    index === currentStep ? "active" : ""
+                  } ${index < currentStep ? "completed" : ""}`}
+                  onClick={() => setCurrentStep(index)}
+                >
+                  {index < currentStep ? "✓" : index + 1}
+                </button>
+              ))}
             </div>
-          </motion.section>
-        </div>
 
-        <div className="lesson-sidebar">
-          <motion.div
-            className="hints-card"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <div className="card-header">
-              <h3>💡 Hints</h3>
-              <button onClick={() => setShowHints(!showHints)} className="toggle-btn">
-                {showHints ? "Hide" : "Show"}
+            {currentStep === lessonContent.length - 1 ? (
+              <Link to="/learning/python" className="nav-btn next complete">
+                Complete Lesson ✓
+              </Link>
+            ) : (
+              <button
+                className="nav-btn next"
+                onClick={handleNext}
+                disabled={currentContent.type === "quiz" && (selectedAnswer === null || !showResult)}
+              >
+                Next →
               </button>
-            </div>
-            {showHints && (
-              <ul className="hints-list">
-                {lessonContent.hints.map((hint, index) => (
-                  <li key={index}>{hint}</li>
-                ))}
-              </ul>
             )}
-          </motion.div>
-
-          <motion.div
-            className="progress-card"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-          >
-            <h3>Your Progress</h3>
-            <div className="progress-stats">
-              <div className="stat">
-                <span className="stat-value">3/6</span>
-                <span className="stat-label">Lessons</span>
-              </div>
-              <div className="stat">
-                <span className="stat-value">275</span>
-                <span className="stat-label">XP</span>
-              </div>
-            </div>
-            <div className="next-lesson">
-              <p>Next: Object-Oriented Programming</p>
-              <button onClick={nextLesson} className="next-btn">
-                Continue →
-              </button>
-            </div>
-          </motion.div>
-
-          <motion.div
-            className="ai-tutor-card"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
-          >
-            <h3>🤖 Need Help?</h3>
-            <p>Stuck on this lesson? Ask our AI tutor for personalized help!</p>
-            <Link to="/chat" className="ai-tutor-btn">
-              Ask AI Tutor
-            </Link>
-          </motion.div>
+          </div>
         </div>
+
+        <AnimatePresence>
+          {showAITutor && (
+            <motion.div
+              className="ai-tutor-sidebar"
+              initial={{ x: 300, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: 300, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <FloatingAITutor
+                user={user}
+                context={`Currently learning about: ${currentContent.title}`}
+                onClose={() => setShowAITutor(false)}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )

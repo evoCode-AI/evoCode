@@ -37,8 +37,7 @@ const ChatTutor: React.FC<ChatTutorProps> = ({ user }) => {
     {
       id: 1,
       type: "ai",
-      content:
-        "Hello! I'm your AI coding tutor. I'm here to help you learn and solve coding problems. What would you like to work on today?",
+      content: `Hello ${user.name}! 👋 I'm your AI coding tutor. I'm here to help you learn and solve coding problems. What would you like to work on today?`,
       timestamp: new Date(),
     },
   ])
@@ -84,173 +83,146 @@ const ChatTutor: React.FC<ChatTutorProps> = ({ user }) => {
   }
 
   const generateAIResponse = (userInput: string): string => {
-    const responses = [
-      "Great question! Let me help you understand this concept step by step...",
-      "I see you're working on this problem. Here's a hint to get you started...",
-      "That's a common challenge! Let's break it down together...",
-      "Excellent progress! Here's how you can improve your solution...",
-      "I notice you might be stuck. Let me provide some guidance...",
-    ]
-    return responses[Math.floor(Math.random() * responses.length)]
+    const lowerInput = userInput.toLowerCase()
+
+    if (lowerInput.includes("algorithm") || lowerInput.includes("explain")) {
+      return "Great question! Let me break down this algorithm step by step:\n\n1. First, we need to understand the problem requirements\n2. Then we'll choose the right data structure\n3. Finally, we'll implement the solution efficiently\n\nWhich specific algorithm would you like me to explain in detail?"
+    }
+
+    if (lowerInput.includes("debug") || lowerInput.includes("error")) {
+      return "I'd be happy to help you debug! 🐛\n\nTo better assist you, please share:\n• Your code snippet\n• The error message you're seeing\n• What you expected to happen\n\nCommon debugging strategies:\n✓ Check for syntax errors\n✓ Verify variable names\n✓ Test with simple inputs\n✓ Use print statements to trace execution"
+    }
+
+    if (lowerInput.includes("optimize")) {
+      return "Optimization is key to writing efficient code! ⚡\n\nHere are some optimization techniques:\n\n🔹 **Time Complexity**: Use better algorithms (O(n) vs O(n²))\n🔹 **Space Complexity**: Minimize memory usage\n🔹 **Data Structures**: Choose the right one for your use case\n🔹 **Caching**: Store frequently used results\n\nWhat specific code would you like to optimize?"
+    }
+
+    return "That's an interesting question! I'm here to help you understand programming concepts, debug code, explain algorithms, and guide you through problem-solving. Could you provide more details about what you're working on? I can help with:\n\n• Code explanations and debugging\n• Algorithm design and optimization\n• Data structure selection\n• Best practices and patterns\n• Problem-solving strategies"
+  }
+
+  const handleQuickAction = (action: QuickAction) => {
+    setInputValue(action.text)
   }
 
   const quickActions: QuickAction[] = [
-    { text: "Explain this code", icon: "🔍" },
-    { text: "Find the bug", icon: "🐛" },
-    { text: "Optimize solution", icon: "⚡" },
-    { text: "Practice problems", icon: "💪" },
+    { text: "Explain this algorithm", icon: "🧠" },
+    { text: "Help me debug my code", icon: "🐛" },
+    { text: "How to optimize this solution?", icon: "⚡" },
+    { text: "What data structure should I use?", icon: "📊" },
+    { text: "Explain time complexity", icon: "⏱️" },
+    { text: "Show me best practices", icon: "✨" },
   ]
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+  }
 
   return (
     <div className="chat-tutor">
       <div className="chat-header">
-        <motion.div
-          className="tutor-info"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="tutor-avatar">🤖</div>
+        <div className="tutor-info">
+          <div className="tutor-avatar">
+            <span className="avatar-icon">🤖</span>
+          </div>
           <div className="tutor-details">
             <h2>AI Coding Tutor</h2>
-            <span className="status">Online • Ready to help</span>
+            <p className="status">Online • Ready to help</p>
           </div>
-        </motion.div>
-
-        <motion.div
-          className="chat-stats"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          <div className="stat">
-            <span>Session: 25 min</span>
-          </div>
-          <div className="stat">
-            <span>Problems Solved: 3</span>
-          </div>
-        </motion.div>
+        </div>
       </div>
 
-      <div className="chat-container">
-        <div className="messages-area">
-          <AnimatePresence>
-            {messages.map((message) => (
-              <motion.div
-                key={message.id}
-                className={`message ${message.type}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="message-avatar">{message.type === "ai" ? "🤖" : "👤"}</div>
-                <div className="message-content">
-                  <div className="message-text">{message.content}</div>
-                  <div className="message-time">
-                    {message.timestamp.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-
-          {isTyping && (
-            <motion.div className="message ai typing" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-              <div className="message-avatar">🤖</div>
+      <div className="chat-messages">
+        <AnimatePresence>
+          {messages.map((message) => (
+            <motion.div
+              key={message.id}
+              className={`message ${message.type}`}
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              transition={{ duration: 0.3 }}
+            >
               <div className="message-content">
-                <div className="typing-indicator">
-                  <span></span>
-                  <span></span>
-                  <span></span>
+                <div className="message-header">
+                  <span className="sender-name">{message.type === "ai" ? "AI Tutor" : "You"}</span>
+                  <span className="message-time">{formatTime(message.timestamp)}</span>
+                </div>
+                <div className="message-text">
+                  {message.content.split("\n").map((line, index) => (
+                    <p key={index}>{line}</p>
+                  ))}
                 </div>
               </div>
             </motion.div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
+          ))}
+        </AnimatePresence>
 
-        <div className="chat-input-area">
-          <div className="quick-actions">
-            {quickActions.map((action, index) => (
-              <motion.button
-                key={index}
-                className="quick-action"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setInputValue(action.text)}
-              >
-                <span className="action-icon">{action.icon}</span>
-                <span className="action-text">{action.text}</span>
-              </motion.button>
-            ))}
-          </div>
-
-          <form onSubmit={handleSendMessage} className="input-form">
-            <div className="input-container">
-              <input
-                type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Ask me anything about coding..."
-                className="message-input"
-              />
-              <motion.button
-                type="submit"
-                className="send-button"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                disabled={!inputValue.trim()}
-              >
-                <span>Send</span>
-                <span className="send-icon">📤</span>
-              </motion.button>
+        {isTyping && (
+          <motion.div
+            className="message ai typing"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            <div className="message-content">
+              <div className="typing-indicator">
+                <div className="typing-dots">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <span className="typing-text">AI Tutor is typing...</span>
+              </div>
             </div>
-          </form>
+          </motion.div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      <div className="quick-actions">
+        <div className="quick-actions-header">
+          <span>💡 Quick Actions</span>
+        </div>
+        <div className="quick-actions-grid">
+          {quickActions.map((action, index) => (
+            <motion.button
+              key={index}
+              className="quick-action-btn"
+              onClick={() => handleQuickAction(action)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <span className="action-icon">{action.icon}</span>
+              <span className="action-text">{action.text}</span>
+            </motion.button>
+          ))}
         </div>
       </div>
 
-      <div className="chat-sidebar">
-        <motion.div
-          className="help-topics"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          <h3>Popular Topics</h3>
-          <div className="topics-list">
-            <div className="topic-item">Variables & Data Types</div>
-            <div className="topic-item">Functions & Methods</div>
-            <div className="topic-item">Loops & Conditionals</div>
-            <div className="topic-item">Debugging Tips</div>
-            <div className="topic-item">Best Practices</div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          className="session-progress"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-        >
-          <h3>Session Progress</h3>
-          <div className="progress-item">
-            <span>Questions Asked</span>
-            <span className="progress-value">8</span>
-          </div>
-          <div className="progress-item">
-            <span>Concepts Learned</span>
-            <span className="progress-value">3</span>
-          </div>
-          <div className="progress-item">
-            <span>XP Earned</span>
-            <span className="progress-value">+45</span>
-          </div>
-        </motion.div>
-      </div>
+      <form className="chat-input-form" onSubmit={handleSendMessage}>
+        <div className="input-container">
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="Ask me anything about coding..."
+            className="chat-input"
+            disabled={isTyping}
+          />
+          <motion.button
+            type="submit"
+            className="send-button"
+            disabled={!inputValue.trim() || isTyping}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <span className="send-icon">📤</span>
+          </motion.button>
+        </div>
+      </form>
     </div>
   )
 }

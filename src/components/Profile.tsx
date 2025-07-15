@@ -1,18 +1,8 @@
 "use client"
-import { motion } from "framer-motion"
-import type React from "react"
 
-import {
-  RadialBarChart,
-  RadialBar,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-} from "recharts"
+import type React from "react"
+import { useState } from "react"
+import { motion } from "framer-motion"
 import "./Profile.css"
 
 interface User {
@@ -24,215 +14,484 @@ interface User {
   streak: number
   badges: string[]
   completedLessons: number[]
+  bio?: string
+  location?: string
+  github?: string
+  linkedin?: string
+  website?: string
+  joinDate?: string
+  profilePicture?: string
 }
 
 interface ProfileProps {
   user: User
 }
 
-interface SkillData {
-  skill: string
-  level: number
-  color: string
-}
+const Profile: React.FC<ProfileProps> = ({ user: initialUser }) => {
+  const [user, setUser] = useState<User>({
+    ...initialUser,
+    bio: initialUser.bio || "Passionate about coding and continuous learning!",
+    location: initialUser.location || "San Francisco, CA",
+    github: initialUser.github || "",
+    linkedin: initialUser.linkedin || "",
+    website: initialUser.website || "",
+    joinDate: initialUser.joinDate || "January 2024",
+    profilePicture: initialUser.profilePicture || "",
+  })
 
-interface WeeklyActivity {
-  day: string
-  hours: number
-}
+  const [isEditing, setIsEditing] = useState(false)
+  const [editForm, setEditForm] = useState(user)
+  const [activeTab, setActiveTab] = useState<"overview" | "achievements" | "activity" | "settings">("overview")
 
-interface Achievement {
-  name: string
-  description: string
-  earned: boolean
-  date?: string
-}
+  const handleSave = () => {
+    setUser(editForm)
+    setIsEditing(false)
+  }
 
-const Profile: React.FC<ProfileProps> = ({ user }) => {
-  const skillsData: SkillData[] = [
-    { skill: "Python", level: 65, color: "#3776ab" },
-    { skill: "JavaScript", level: 40, color: "#f7df1e" },
-    { skill: "Java", level: 25, color: "#ed8b00" },
-    { skill: "C++", level: 10, color: "#00599c" },
+  const handleCancel = () => {
+    setEditForm(user)
+    setIsEditing(false)
+  }
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const result = e.target?.result as string
+        setEditForm({ ...editForm, profilePicture: result })
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const achievements = [
+    { name: "First Steps", icon: "👶", description: "Completed your first lesson", earned: true, date: "Jan 15, 2024" },
+    { name: "Code Warrior", icon: "⚔️", description: "Solved 10 coding problems", earned: true, date: "Jan 20, 2024" },
+    { name: "Streak Master", icon: "🔥", description: "Maintained a 7-day streak", earned: true, date: "Jan 25, 2024" },
+    { name: "Bug Hunter", icon: "🐛", description: "Debug 5 different programs", earned: false, date: null },
+    {
+      name: "Speed Demon",
+      icon: "⚡",
+      description: "Complete a lesson in under 10 minutes",
+      earned: false,
+      date: null,
+    },
+    { name: "Master Coder", icon: "👑", description: "Reach level 10", earned: false, date: null },
   ]
 
-  const weeklyActivity: WeeklyActivity[] = [
-    { day: "Mon", hours: 2.5 },
-    { day: "Tue", hours: 1.8 },
-    { day: "Wed", hours: 3.2 },
-    { day: "Thu", hours: 2.1 },
-    { day: "Fri", hours: 1.5 },
-    { day: "Sat", hours: 4.0 },
-    { day: "Sun", hours: 2.8 },
+  const recentActivity = [
+    { action: "Completed Python Basics - Variables", time: "2 hours ago", xp: 50 },
+    { action: "Solved Array Manipulation Problem", time: "5 hours ago", xp: 25 },
+    { action: "Earned 'Streak Master' achievement", time: "1 day ago", xp: 100 },
+    { action: "Started JavaScript Fundamentals", time: "2 days ago", xp: 0 },
+    { action: "Completed Data Structures Quiz", time: "3 days ago", xp: 75 },
   ]
 
-  const achievements: Achievement[] = [
-    { name: "First Steps", description: "Complete your first lesson", earned: true, date: "2024-01-15" },
-    { name: "Code Warrior", description: "Solve 10 coding problems", earned: true, date: "2024-01-20" },
-    { name: "Streak Master", description: "Maintain a 7-day streak", earned: true, date: "2024-01-25" },
-    { name: "Bug Hunter", description: "Debug 5 programs successfully", earned: false },
-    { name: "Speed Demon", description: "Complete a lesson in under 10 minutes", earned: false },
-    { name: "Master Coder", description: "Complete all beginner courses", earned: false },
+  const stats = [
+    { label: "Problems Solved", value: "47", icon: "✅" },
+    { label: "Hours Coded", value: "128", icon: "⏱️" },
+    { label: "Languages", value: "4", icon: "💻" },
+    { label: "Certificates", value: "2", icon: "🏆" },
   ]
 
   return (
     <div className="profile">
       <div className="profile-header">
         <motion.div
-          className="profile-info"
+          className="profile-banner"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="profile-avatar-large">{user.name.charAt(0).toUpperCase()}</div>
-          <div className="profile-details">
-            <h1>{user.name}</h1>
-            <p className="profile-email">{user.email}</p>
-            <div className="profile-level">
-              <span className="level-badge">Level {user.level || 5}</span>
-              <span className="xp-info">{user.xp || 1250} XP</span>
+          <div className="banner-gradient"></div>
+          <div className="profile-main">
+            <div className="profile-picture-container">
+              {isEditing ? (
+                <div className="picture-upload">
+                  <input
+                    type="file"
+                    id="profile-picture"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="file-input"
+                  />
+                  <label htmlFor="profile-picture" className="upload-label">
+                    {editForm.profilePicture ? (
+                      <img
+                        src={editForm.profilePicture || "/placeholder.svg"}
+                        alt="Profile"
+                        className="profile-picture"
+                      />
+                    ) : (
+                      <div className="default-avatar">
+                        <span>{editForm.name.charAt(0).toUpperCase()}</span>
+                      </div>
+                    )}
+                    <div className="upload-overlay">
+                      <span>📷</span>
+                    </div>
+                  </label>
+                </div>
+              ) : (
+                <div className="profile-picture">
+                  {user.profilePicture ? (
+                    <img src={user.profilePicture || "/placeholder.svg"} alt="Profile" />
+                  ) : (
+                    <div className="default-avatar">
+                      <span>{user.name.charAt(0).toUpperCase()}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className="level-badge">
+                <span>Level {user.level}</span>
+              </div>
+            </div>
+
+            <div className="profile-info">
+              {isEditing ? (
+                <div className="edit-form">
+                  <input
+                    type="text"
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    className="edit-input name-input"
+                    placeholder="Your name"
+                  />
+                  <input
+                    type="email"
+                    value={editForm.email}
+                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                    className="edit-input"
+                    placeholder="Your email"
+                  />
+                  <textarea
+                    value={editForm.bio}
+                    onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                    className="edit-textarea"
+                    placeholder="Tell us about yourself..."
+                    rows={3}
+                  />
+                  <input
+                    type="text"
+                    value={editForm.location}
+                    onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                    className="edit-input"
+                    placeholder="Your location"
+                  />
+                </div>
+              ) : (
+                <div className="profile-details">
+                  <h1>{user.name}</h1>
+                  <p className="email">{user.email}</p>
+                  <p className="bio">{user.bio}</p>
+                  <div className="profile-meta">
+                    <span className="location">📍 {user.location}</span>
+                    <span className="join-date">📅 Joined {user.joinDate}</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="profile-actions">
+                {isEditing ? (
+                  <div className="edit-actions">
+                    <button onClick={handleSave} className="save-btn">
+                      Save Changes
+                    </button>
+                    <button onClick={handleCancel} className="cancel-btn">
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button onClick={() => setIsEditing(true)} className="edit-btn">
+                    ✏️ Edit Profile
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </motion.div>
 
-        <motion.div
-          className="profile-stats"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          <div className="stat-card">
-            <h3>🔥 {user.streak || 7}</h3>
-            <p>Day Streak</p>
-          </div>
-          <div className="stat-card">
-            <h3>📚 23</h3>
-            <p>Lessons Completed</p>
-          </div>
-          <div className="stat-card">
-            <h3>🏆 3</h3>
-            <p>Achievements</p>
-          </div>
-          <div className="stat-card">
-            <h3>⏱️ 18h</h3>
-            <p>Time Spent</p>
+          <div className="profile-stats">
+            {stats.map((stat, index) => (
+              <motion.div
+                key={stat.label}
+                className="stat-item"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.1 * index }}
+              >
+                <div className="stat-icon">{stat.icon}</div>
+                <div className="stat-info">
+                  <span className="stat-value">{stat.value}</span>
+                  <span className="stat-label">{stat.label}</span>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </motion.div>
       </div>
 
       <div className="profile-content">
-        <div className="main-content">
-          <motion.section
-            className="skills-section"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
+        <div className="profile-tabs">
+          <button
+            className={`tab ${activeTab === "overview" ? "active" : ""}`}
+            onClick={() => setActiveTab("overview")}
           >
-            <h2>Programming Skills</h2>
-            <div className="skills-grid">
-              {skillsData.map((skill, index) => (
-                <motion.div
-                  key={skill.skill}
-                  className="skill-card"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.1 * index }}
-                >
-                  <div className="skill-info">
-                    <h3>{skill.skill}</h3>
-                    <span className="skill-level">{skill.level}%</span>
-                  </div>
-                  <div className="skill-progress">
-                    <motion.div
-                      className="skill-bar"
-                      style={{ backgroundColor: skill.color }}
-                      initial={{ width: 0 }}
-                      animate={{ width: `${skill.level}%` }}
-                      transition={{ duration: 1, delay: 0.5 + 0.1 * index }}
-                    />
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.section>
-
-          <motion.section
-            className="activity-section"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
+            📊 Overview
+          </button>
+          <button
+            className={`tab ${activeTab === "achievements" ? "active" : ""}`}
+            onClick={() => setActiveTab("achievements")}
           >
-            <h2>Weekly Activity</h2>
-            <div className="activity-chart">
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={weeklyActivity}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                  <XAxis dataKey="day" stroke="#666" />
-                  <YAxis stroke="#666" />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#fff",
-                      border: "1px solid #ddd",
-                      borderRadius: "8px",
-                    }}
-                  />
-                  <Bar dataKey="hours" fill="#6366f1" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.section>
+            🏆 Achievements
+          </button>
+          <button
+            className={`tab ${activeTab === "activity" ? "active" : ""}`}
+            onClick={() => setActiveTab("activity")}
+          >
+            📈 Activity
+          </button>
+          <button
+            className={`tab ${activeTab === "settings" ? "active" : ""}`}
+            onClick={() => setActiveTab("settings")}
+          >
+            ⚙️ Settings
+          </button>
         </div>
 
-        <div className="sidebar-content">
-          <motion.section
-            className="achievements-section"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <h2>Achievements</h2>
-            <div className="achievements-list">
-              {achievements.map((achievement, index) => (
-                <motion.div
-                  key={achievement.name}
-                  className={`achievement-card ${achievement.earned ? "earned" : "locked"}`}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3, delay: 0.1 * index }}
-                >
-                  <div className="achievement-content">
-                    <h4>{achievement.name}</h4>
-                    <p>{achievement.description}</p>
-                    {achievement.earned && achievement.date && (
-                      <span className="earned-date">Earned: {achievement.date}</span>
-                    )}
+        <div className="tab-content">
+          {activeTab === "overview" && (
+            <motion.div
+              className="overview-tab"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              <div className="overview-grid">
+                <div className="progress-card">
+                  <h3>🎯 Learning Progress</h3>
+                  <div className="progress-item">
+                    <span>Python</span>
+                    <div className="progress-bar">
+                      <div className="progress-fill" style={{ width: "75%" }}></div>
+                    </div>
+                    <span>75%</span>
                   </div>
-                  {achievement.earned && <div className="earned-badge">✓</div>}
-                </motion.div>
-              ))}
-            </div>
-          </motion.section>
+                  <div className="progress-item">
+                    <span>JavaScript</span>
+                    <div className="progress-bar">
+                      <div className="progress-fill" style={{ width: "45%" }}></div>
+                    </div>
+                    <span>45%</span>
+                  </div>
+                  <div className="progress-item">
+                    <span>Java</span>
+                    <div className="progress-bar">
+                      <div className="progress-fill" style={{ width: "30%" }}></div>
+                    </div>
+                    <span>30%</span>
+                  </div>
+                </div>
 
-          <motion.section
-            className="progress-overview"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-          >
-            <h2>Overall Progress</h2>
-            <div className="progress-circle">
-              <ResponsiveContainer width={150} height={150}>
-                <RadialBarChart cx={75} cy={75} innerRadius={50} outerRadius={70} data={[{ value: 68 }]}>
-                  <RadialBar dataKey="value" fill="#6366f1" cornerRadius={10} />
-                </RadialBarChart>
-              </ResponsiveContainer>
-              <div className="progress-text">
-                <span className="progress-percentage">68%</span>
-                <span className="progress-label">Complete</span>
+                <div className="social-links-card">
+                  <h3>🔗 Social Links</h3>
+                  {isEditing ? (
+                    <div className="social-edit">
+                      <input
+                        type="text"
+                        value={editForm.github}
+                        onChange={(e) => setEditForm({ ...editForm, github: e.target.value })}
+                        placeholder="GitHub username"
+                        className="social-input"
+                      />
+                      <input
+                        type="text"
+                        value={editForm.linkedin}
+                        onChange={(e) => setEditForm({ ...editForm, linkedin: e.target.value })}
+                        placeholder="LinkedIn profile"
+                        className="social-input"
+                      />
+                      <input
+                        type="text"
+                        value={editForm.website}
+                        onChange={(e) => setEditForm({ ...editForm, website: e.target.value })}
+                        placeholder="Personal website"
+                        className="social-input"
+                      />
+                    </div>
+                  ) : (
+                    <div className="social-links">
+                      {user.github && (
+                        <a
+                          href={`https://github.com/${user.github}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="social-link"
+                        >
+                          <span className="social-icon">🐙</span>
+                          <span>GitHub</span>
+                        </a>
+                      )}
+                      {user.linkedin && (
+                        <a href={user.linkedin} target="_blank" rel="noopener noreferrer" className="social-link">
+                          <span className="social-icon">💼</span>
+                          <span>LinkedIn</span>
+                        </a>
+                      )}
+                      {user.website && (
+                        <a href={user.website} target="_blank" rel="noopener noreferrer" className="social-link">
+                          <span className="social-icon">🌐</span>
+                          <span>Website</span>
+                        </a>
+                      )}
+                      {!user.github && !user.linkedin && !user.website && (
+                        <p className="no-links">No social links added yet</p>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-            <p>You're making great progress! Keep up the excellent work.</p>
-          </motion.section>
+            </motion.div>
+          )}
+
+          {activeTab === "achievements" && (
+            <motion.div
+              className="achievements-tab"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              <div className="achievements-grid">
+                {achievements.map((achievement, index) => (
+                  <motion.div
+                    key={achievement.name}
+                    className={`achievement-card ${achievement.earned ? "earned" : "locked"}`}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, delay: 0.1 * index }}
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    <div className="achievement-icon">{achievement.icon}</div>
+                    <div className="achievement-info">
+                      <h4>{achievement.name}</h4>
+                      <p>{achievement.description}</p>
+                      {achievement.earned && achievement.date && (
+                        <span className="achievement-date">Earned on {achievement.date}</span>
+                      )}
+                    </div>
+                    {achievement.earned && <div className="earned-badge">✓</div>}
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === "activity" && (
+            <motion.div
+              className="activity-tab"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              <div className="activity-list">
+                {recentActivity.map((activity, index) => (
+                  <motion.div
+                    key={index}
+                    className="activity-item"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: 0.1 * index }}
+                  >
+                    <div className="activity-content">
+                      <p className="activity-action">{activity.action}</p>
+                      <span className="activity-time">{activity.time}</span>
+                    </div>
+                    {activity.xp > 0 && <div className="activity-xp">+{activity.xp} XP</div>}
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === "settings" && (
+            <motion.div
+              className="settings-tab"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              <div className="settings-sections">
+                <div className="settings-section">
+                  <h3>🔔 Notifications</h3>
+                  <div className="setting-item">
+                    <label>
+                      <input type="checkbox" defaultChecked />
+                      <span>Email notifications for new lessons</span>
+                    </label>
+                  </div>
+                  <div className="setting-item">
+                    <label>
+                      <input type="checkbox" defaultChecked />
+                      <span>Daily streak reminders</span>
+                    </label>
+                  </div>
+                  <div className="setting-item">
+                    <label>
+                      <input type="checkbox" />
+                      <span>Weekly progress reports</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="settings-section">
+                  <h3>🎨 Preferences</h3>
+                  <div className="setting-item">
+                    <label>
+                      <span>Preferred coding language</span>
+                      <select className="setting-select">
+                        <option>Python</option>
+                        <option>JavaScript</option>
+                        <option>Java</option>
+                        <option>C++</option>
+                      </select>
+                    </label>
+                  </div>
+                  <div className="setting-item">
+                    <label>
+                      <span>Difficulty level</span>
+                      <select className="setting-select">
+                        <option>Beginner</option>
+                        <option>Intermediate</option>
+                        <option>Advanced</option>
+                      </select>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="settings-section">
+                  <h3>🔒 Privacy</h3>
+                  <div className="setting-item">
+                    <label>
+                      <input type="checkbox" defaultChecked />
+                      <span>Make profile public</span>
+                    </label>
+                  </div>
+                  <div className="setting-item">
+                    <label>
+                      <input type="checkbox" />
+                      <span>Show progress on leaderboard</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="settings-section danger">
+                  <h3>⚠️ Danger Zone</h3>
+                  <button className="danger-btn">Delete Account</button>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </div>
       </div>
     </div>
